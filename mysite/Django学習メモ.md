@@ -3,6 +3,7 @@
 ## Django のコマンド
 
 ### startproject
+
 ```django-admin startproject mysite```
 
   プロジェクトを作成する。  
@@ -10,18 +11,21 @@
   コマンドラインから、コードを置きたい場所に cd して、上記のコマンドを 実行してください。これを実行すると、現在のディレクトリに mysite ディレクトリが作成されます。動作しなければ django-admin 実行時の問題 を参照してください。  
 
 ### startapp
+
 ```py manage.py startapp [プロジェクト名]```
 
   このコマンドは [プロジェクト名] のディレクトリと基本的な Django プロジェクトに必要な View Model などのファイルを作成します。  
 
 ### runserver
+
 ```py manage.py runserver```
 
   Python で書かれた軽量の Web サーバである Django 開発サーバを起動しました。私たちはこれを Django と共に提供し、本番用のサーバ (Apache のような) の設定に煩わされることなく、本番の準備が整うまで迅速に開発を行えるようにしました。  
   今、注意すべきことは、このサーバを本番環境に近いところで使わないでください。このサーバーは、あくまでも開発用です。(私たちはウェブフレームワークを作る仕事をしているのであって、ウェブサーバーを作っているのではありません)。  
-  サーバーが起動したら、ウェブブラウザで http://127.0.0.1:8000/ にアクセスしてみてください。おめでとうございます！」というページが表示され、ロケットが飛び立つのが見えると思います。成功です!
+  サーバーが起動したら、ウェブブラウザで <http://127.0.0.1:8000/> にアクセスしてみてください。おめでとうございます！」というページが表示され、ロケットが飛び立つのが見えると思います。成功です!
 
 ### makemigrations
+
 ```django-admin makemigrations [app_label [app_label ...]]```
 
   モデルに基づいて新しいマイグレーションを作成する。  
@@ -31,6 +35,7 @@
   Djangoにモデルに変更があったこと(この場合、新しいものを作成しました)を伝え、そして変更を マイグレーション の形で保存することができました。
 
 ### migrate  
+
 ```python -m manage.py migrate```
 
   Django には、マイグレーションをあなたの代わりに実行し、自動でデータベーススキーマを管理するためのコマンドがあります。これは migrate と呼ばれるコマンドで、この後すぐに見ていきます。  
@@ -82,7 +87,7 @@
     ~~~
 
   - ※上記、 path() の説明
-    - 第一引数（必須） route ：第二引数の views.py を探す起点となるのはディレクトリ。上記は '' なのでドメイン直下 (http://hogehoge.fuga/) のルートパスを指定したことになる。
+    - 第一引数（必須） route ：第二引数の views.py を探す起点となるのはディレクトリ。上記は '' なのでドメイン直下 (<http://hogehoge.fuga/>) のルートパスを指定したことになる。
     - 第二引数（必須） view ：views.py の 関数 index
     - 第三引数（任意） kwargs ：キーと対になって対応する辞書変数を指定できる。（※まだ使ったことがないのでわからない）
     - 第四引数（任意） name ：人間にとってわかりやすい名前（エイリアス）をつけることができる。
@@ -119,11 +124,65 @@
   　マイグレーションはとても強力なツールであり、プロジェクトの発展に合わせて、モデルを変更し続けていくことができます。データベースやテーブルを削除して作り直す必要はありません - マイグレーションは、データを失うことなしにデータベースをライブでアップグレードするよう特化しています。これらについてはチュートリアルの後の部分でもっと深くカバーしますが、今は、モデルの変更を実施するための、上記3ステップガイドを覚えておいてください。  
   マイグレーションの作成と適用のコマンドが分割されている理由は、マイグレーションをバージョン管理システムにコミットし、アプリとともに配布するためです。これによって、あなたの開発が容易になるだけでなく、他の開発者や本番環境にとって使いやすいものになります。
 
-（※一時的メモ・次にやること、 https://docs.djangoproject.com/ja/4.0/intro/tutorial02/ の真ん中あたりのシェル実行をやってみる。 __str__ メソッドの追加までやった）
+### ビュー（views.py）を変更する
 
+- views.py に HttpResponse を返す関数を書く
 
+  例）
 
+  ~~~python
+  def detail(request, question_id):
+    return HttpResponse("You're looking at question %s." % question_id)
+  ~~~
 
+  呼び出す関数を定義（例では datail ）して、 request 以外の引数がある場合には、それも定義（例では question_id ）する。
+  この関数は必ず return HttpResponse() で終わる必要があり、HttpResponse() の引数には、出力する内容（例では "You're looking at question %s." ）を書く。（続きの % 以降は引数を $s に渡す書き方。Python3以降では非推奨らしいので、 format メソッドとかの 別の書き方をすべき）
+
+  ~~~python
+  def detail(request, question_id):
+    return HttpResponse("You're looking at question {question_id}")
+  ~~~
+
+- views.py に書いた HttpResponse 関数を、 HTTPリクエストに従い出力できるよう urls.py に反映させる。
+  
+  例）
+
+  ~~~python
+  from django.urls import path
+
+  from . import views
+
+  urlpatterns = [
+    # ex: /polls/
+    path('', views.index, name='index'),
+    # ex: /polls/5/
+    path('<int:question_id>/', views.detail, name='detail'),
+    # ex: /polls/5/results/
+    path('<int:question_id>/results/', views.results, name='results'),
+    # ex: /polls/5/vote/
+    path('<int:question_id>/vote/', views.vote, name='vote'),
+  ]
+  ~~~
+
+  　誰かがWebサイトの 「/polls/34/」 をリクエストすると、 Django は ROOT_URLCONF に指定されている Python モジュール mysite.urls をロードします。そのモジュール内の urlpatterns という変数を探し、順番にパターンを検査していきます。 polls/ にマッチした箇所を見つけた後、一致した文字列 ("polls/") を取り除き、残りの文字列である "34/" を次の処理のために 『polls.urls』 の URLconf に渡します。これは '<int：question_id>/' に一致し、結果として下記のように detail() が呼び出されます。
+
+  ~~~python
+  detail(request=<HttpRequest object>, question_id=34)
+  ~~~
+
+### views.py から分離されたページのデザインを templates 内の index.html に書く
+  
+  1. Django が検索、ロードするテンプレートのHTMLファイルを作る。
+
+  ※ 仮にアプリケーションのディレクトリ名が "polls/" である場合は、そのディレクトリ内に下記の通り "templates/polls/" のディレクトリと index.html ファイルを作成する。
+
+  ~~~linux
+    polls/templates/polls/index.html
+  ~~~
+
+  2. あ
+
+  3. S
 
 ## manage.py のコマンド一覧
 
