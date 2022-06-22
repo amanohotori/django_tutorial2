@@ -1,4 +1,3 @@
-from select import select
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -30,10 +29,10 @@ def vote(request, question_id):
         # POST データに choice がなければ、エラーメッセージ付きで Question への Vote フォームを再表示させる
         return render(request, 'polls/detail.html', {
             'questioin': question,
-            'error_massage': "You didnt select a choice.",
+            'error_massage': "You didn't select a choice.",
         })
     else:
-        selected_choice.votes +=1
+        selected_choice.votes += 1
         selected_choice.save()
 
          # POST データを正常に処理した後は、常に HttpResponseRedirect を返します。これにより、ユーザが戻るボタンを押した場合に、データが二重に投稿されることを防ぐことができます。
