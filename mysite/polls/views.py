@@ -26,9 +26,9 @@ def vote(request, question_id):
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
     except (KeyError, Choice.DoesNotExist):
-        # POST データに choice がなければ、エラーメッセージ付きで Question への Vote フォームを再表示させる
+        # POST データに choice がなければ、Question の detail 質問投票フォームを再表示する
         return render(request, 'polls/detail.html', {
-            'questioin': question,
+            'question': question,
             'error_massage': "You didn't select a choice.",
         })
     else:
