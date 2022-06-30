@@ -1,6 +1,6 @@
 # Django学習メモ
 
-## Django のコマンド
+## Django を使ったプロジェクトの作成
 
 ### startproject
 
@@ -41,11 +41,33 @@
   Django には、マイグレーションをあなたの代わりに実行し、自動でデータベーススキーマを管理するためのコマンドがあります。これは migrate と呼ばれるコマンドで、この後すぐに見ていきます。  
   モデルとは、データに関する唯一かつ決定的な情報源です。モデルには、保存しているデータの必須フィールドと動作が含まれています。Django は DRY 原則に従います。目標は、データモデルを一箇所で定義し、そこから自動的に物事を派生させることです。
 
-## アプリケーションの作り方
+#### ※付記『データベースの作成について』
+
+  Djangoはモデル（データベース設計と入出力のモデル）からのマイグレーションによってSQL文による操作を必要とせずに、データベースを構成します。
+
+- SQLite データベースを使う場合
+  Djangoは特別な設定不要でプロジェクトルートに db.sqlite3 という単一ファイルで扱えるSQLiteデータベースを作成します。
+
+- 他のデータベースを使う場合は、使用するSQLデータベースに対し "CREATE DATABASE データベース名;" でデータベースを作成する。
+- mysite/settings.py の DATABESES を設定する。
+- 'default' 項目内の以下のキーをデータベースの接続設定に合うよう変更する。
+- ENGINE --  
+  'django.db.backends.sqlite3'、  
+  'django.db.backends.postgresql'、  
+  'django.db.backends.mysql'  
+  または 'django.db.backends.oracle' のいずれかにします。  
+  その他の[バックエンド](https://docs.djangoproject.com/ja/4.0/ref/databases/#third-party-notes)も利用可能。  
+- NAME --  
+  SQLite を使っていない場合、ここで USER や PASSWORD そして HOST などを設定して、mysite/settings.py のデータベースユーザに「データベース作成」の権限があることを確認します。  
+  これで settings.py に権限を与えることで、Djangoのモデルからデータベースを自動作成、 Admin サイトのGUIからデータベースを管理、変更することができます。  
+
+  ※詳細については [DATABASES](https://docs.djangoproject.com/ja/4.0/ref/settings/#std-setting-DATABASES) のリファレンスドキュメントを参照してください。
+
+## アプリケーションの新規作成の手順
 
 ### Django プロジェクトを作成する
 
-  コマンド、 ```django-admin startproject [ルートディレクトリ名]``` を実行すると、カレントディレクトリに [ルートディレクトリ名] がディレクトリとして作成され、 Django を構成するプロジェクトファイルが作成される。  
+  コマンド、 ```django-admin startproject [Djangoルートディレクトリ名]``` を実行すると、カレントディレクトリに [Djangoルートディレクトリ名] がディレクトリとして作成され、 Django を構成するプロジェクトファイルが作成される。この構成ファイルの一群がDjangoの本体となる。  
   作成されたルートディレクトリに入り、 ```python manage.py [コマンド名]``` によって Django のコマンドは実行する。
 
 ### Django アプリケーションを作成する
@@ -56,15 +78,6 @@
 
 ### views.py, models.py, urls.py などの構成ファイルに変更を加える
 
-- views.py に表示したいHTMLのモデル呼び出しを設定する。  
-  ※1. 基本的に view とは javascript jQuery Python などのコードと変数を含むHTMLであり、最終的にレダリングされHTML出力されるドキュメントの見た目の設定である。  
-  ※2. 以下は views.py BootstrapのCMSテンプレートを使う場合の一例：
-  - 呼び出すデータベース
-  - 使用するBootstrapのCMSテンプレート  
-    （※ CMS とは ContentsManagementSystem の略称。WEBサイトやコンテンツを構築・管理・更新できるシステムのこと）
-  - テンプレートに渡すデータ
-- テンプレートを
-- models.py に変更を加える。（まだ学習不足）
 - プロジェクトルートディレクトリにある settings.py を編集し、 INSTALLED_APPS 設定に ```[アプリケーション名].apps.[アプリケーション名（クラスなので頭文字大文字）]Config```
  の [アプリケーション名（クラスなので頭文字大文字）]Config クラスを 先述のとおりドットつなぎのパスで追加する。
 
@@ -111,6 +124,23 @@
     - 唯一の例外は admin.site.urls はこれについての。
     - （※正直もうひとつ理解しきれていない。次も参照： [他の URLconfs をインクルードする](https://docs.djangoproject.com/ja/4.0/topics/http/urls/#including-other-urlconfs) ）
 
+#### ※要約した説明
+
+- models.py に変更を加える。
+- views.py に表示したいHTMLのモデル呼び出しを設定する。  
+  ※1. 基本的に view とは javascript jQuery Python などのコードと変数を含むHTMLであり、最終的にレダリングされHTML出力されるドキュメントの見た目の設定である。  
+  ※2. 以下は views.py BootstrapのCMSテンプレートを使う場合の一例：
+  - 呼び出すデータベースを settings.py に設定する。
+  - テンプレートディレクトリを作って、テンプレートの .html を書く。
+    ~~Bootstrap の CMS テンプレートを使うこともできる。（できるの？ ここ間違ってない？）  
+      （※ CMS とは ContentsManagementSystem の略称。WEBサイトやコンテンツを構築・管理・更新できるシステムのこと）~~
+- views.py の各ビューのクラス、関数を urls.py にインデックスする。
+
+#### ※！更に要約した説明！
+
+  **■ （たぶん） Django フレームワークを動かすと settings.py がはじめに読み込まれるので、そこにリストされている様々なフレームワークの対象ファイルを作ったり書き換えたりして、任意のウェブサイトやウェブアプリケーションを作れということらしい。**
+
+
 ## Model, View, Template の設定のしかた
 
 ### モデル（models.py）を変更する
@@ -128,7 +158,7 @@
 
 - views.py に HttpResponse を返す関数を書く
 
-  例）
+  - 例）
 
   ~~~python
   def detail(request, question_id):
@@ -172,16 +202,9 @@
 
 ### views.py から分離されたページのデザインを templates 内の index.html に書く
   
-  1. Django が検索、ロードするテンプレートのHTMLファイルを作る。
-
-  ※ 仮にアプリケーションのディレクトリ名が "polls/" である場合は、そのディレクトリ内に下記の通り "templates/polls/" のディレクトリと index.html ファイルを作成する。
-
-  ~~~linux
-    polls/templates/polls/index.html
-  ~~~
-
+  1. Django が検索、ロードするテンプレートのHTMLファイルを作る。  
+    - 仮にアプリケーションのディレクトリ名が ```Djangoルートディレクトリ~/polls/``` である場合は、その```polls/```ディレクトリ内に下記の通り ```polls/templates/polls/``` のディレクトリを作成し、そこに ```polls/templates/polls/index.html``` はじめとするテンプレートHTMLファイルを作成していく。  
   2. あ
-
   3. S
 
 ## manage.py のコマンド一覧
