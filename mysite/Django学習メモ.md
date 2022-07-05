@@ -206,6 +206,10 @@
   viwews.pyと合わせながらフロントビューを作っていく。
     - views.pyとtemplatesのHTMLとの分離違い（書く上での分け方）は
 
+:::note info
+test
+:::
+
 ## manage.py のコマンド一覧
 
 ~~~powershell

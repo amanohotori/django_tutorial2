@@ -1,72 +1,10 @@
->>> from polls.models import Choice, Question
+class QuestionModelTests(TestCase):
 
-# 私たちの __str__() の追加がうまくいったかどうか確認してください。
->>> Question.objects.all()
-<QuerySet [<Question: What's up?>]>
-
-# Django は、完全にキーワード引数で駆動される豊富なデータベース検索 API を提供します。
->>> Question.objects.filter(id=1)
-<QuerySet [<Question: What's up?>]>
->>> Question.objects.filter(question_text__startswith='What')
-<QuerySet [<Question: What's up?>]>
-
-# 今年出題された問題を入手する。
->>> from django.utils import timezone
->>> current_year = timezone.now().year
->>> Question.objects.get(pub_date__year=current_year)
-<Question: What's up?>
-
-# 存在しないIDを要求すると、例外が発生します。
->>> Question.objects.get(id=2)
-Traceback (most recent call last):
-    ...
-DoesNotExist: Question matching query does not exist.
-
-# 主キーによる検索は最も一般的なケースなので、 Django は主キーの正確な検索を行うためのショートカットを提供します。
-# 以下は Question.objects.get(id=1) と同じです。
->>> Question.objects.get(pk=1)
-<Question: What's up?>
-
-# 私たちのカスタムメソッドが機能したことを確認する。
->>> q = Question.objects.get(pk=1)
->>> q.was_published_recently()
-True
-
-# 質問には2つの選択肢を与えましょう。
-# create 呼び出しは、新しい Choice オブジェクトを構築し、 INSERT 文を実行し、利用可能な選択肢のセットに選択肢を追加し、新しい Choice オブジェクトを返します。
-# Django は ForeignKey 関係の「向こう側」(例えば質問の選択肢) を保持するセットを作成し、API 経由でアクセスできるようにします。
->>> q = Question.objects.get(pk=1)
-
-# 関連するオブジェクトセットから任意の選択肢を表示する
-# -- 今のところなし。
->>> q.choice_set.all()
-<QuerySet []>
-
-# 3つの選択肢を作る。
->>> q.choice_set.create(choice_text='Not much', votes=0)
-<Choice: Not much>
->>> q.choice_set.create(choice_text='The sky', votes=0)
-<Choice: The sky>
->>> c = q.choice_set.create(choice_text='Just hacking again', votes=0)
-
-# Choiceオブジェクトは、関連するQuestionオブジェクトにAPIアクセスすることができます。
->>> c.question
-<Question: What's up?>
-
-# また、その逆も同様です。QuestionオブジェクトはChoiceオブジェクトにアクセスすることができます。
->>> q.choice_set.all()
-<QuerySet [<Choice: Not much>, <Choice: The sky>, <Choice: Just hacking again>]>
->>> q.choice_set.count()
-3
-
-# APIは必要な範囲まで自動的にリレーションシップを追従します。
-# リレーションシップを区切るには、ダブルアンダースコアを使用します。
-# これは、あなたが望む限り、何段階でも動作します。
-# pub_date が今年の問題のすべての Choices を検索します。
-# (上記で作成した 'current_year' 変数を再利用します)
->>> Choice.objects.filter(question__pub_date__year=current_year)
-<QuerySet [<Choice: Not much>, <Choice: The sky>, <Choice: Just hacking again>]>
-
-# 選択肢の一つを削除してみましょう。それにはdelete()を使いましょう。
->>> c = q.choice_set.filter(choice_text__startswith='Just hacking')
->>> c.delete()
+    def test_was_published_recently_with_future_question(self):
+        """
+        was_published_recently() returns False for questions whose pub_date
+        is in the future.
+        """
+        time = timezone.now() + datetime.timedelta(days=30)
+        future_question = Question(pub_date=time)
+        self.assertIs(future_question.was_published_recently(), False)
